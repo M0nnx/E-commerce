@@ -1,0 +1,25 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+
+# Archivos de entorno
+.env
+*.env
+
+# VSCode
+.vscode/
+
+# Archivos Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de logs
+*.log
+
+# Archivos generados por Django
+/staticfiles/
+/media/
+
+# Archivos de migraciones (opcio
