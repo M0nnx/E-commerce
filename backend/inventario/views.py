@@ -5,12 +5,14 @@ from rest_framework import filters , viewsets
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.views.decorators.csrf import csrf_exempt
+from cloudinary.uploader import upload, cloudinary
+from django.http import JsonResponse
 
 
-class postProducto(generics.CreateAPIView):
+class addProducto(generics.CreateAPIView):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
-
 
 class getProducto(generics.ListAPIView):
     queryset = Producto.objects.all()
@@ -70,7 +72,6 @@ class buscarId(generics.RetrieveAPIView):
                 return Producto.objects.get(nombre__iexact=param)
             except Producto.DoesNotExist:
                 raise NotFound(f"Producto no encontrado con el nombre: {param}")
-
 class filtrarCategoria(generics.ListAPIView):
     queryset= Producto.objects.all()
     serializer_class= ProductoSerializer
@@ -86,17 +87,14 @@ class filtrarCategoria(generics.ListAPIView):
         else:
             raise NotFound("No se proporcionó ninguna categoría.")
 
-class verProducto(viewsets.ModelViewSet):
-    queryset = Producto.objects.all()
-    serializer_class = ProductoSerializer
+@csrf_exempt
+def actualizar_imagen(request, id):
+    producto = Producto.objects.get(id=id)
+    imagen = request.FILES['imagen']
 
-    @action(detail=True, methods=['post'])
-    def cambiarImagen(self, request, pk=None):
-        producto = self.get_object()
-        imagen = request.FILES.get('imagen')
-        if imagen:
-            resultado = cloudinary.uploader.upload(imagen, folder="productos")
-            producto.urlfoto = resultado.get("secure_url")
-            producto.save()
-            return Response({'url': producto.urlfoto})
-        return Response({'error': 'No se envió imagen'}, status=400)
+    folder_path = f"productos/{producto.id}-{producto.nombre}"
+    response = cloudinary.uploader.upload(imagen, folder=folder_path)
+    urlfoto = response['secure_url']
+    producto.urlfoto = urlfoto
+    producto.save()
+    return JsonResponse({'Correcto': True, 'urlfoto': urlfoto})

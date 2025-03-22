@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'inventario',
     'drf_yasg',
     'corsheaders',
+    'cloudinary_storage',
+    'cloudinary'
     
 ]
 
@@ -92,10 +94,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 cloudinary.config( 
-  CLOUD_NAME = env('CLOUD_NAME'), 
+  CLOUD_NAME = env('CLOUDINARY_URL'), 
   API_KEY = env('API_KEY'), 
-  API_SECRET = env('API_SECRET') 
+  API_SECRET = env('API_SECRET'),
+  SECURE = env('SECURE')
 )
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
