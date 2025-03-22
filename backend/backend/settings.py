@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import environ
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
@@ -81,15 +84,18 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
-
 DATABASES = {
     'default': env.db(),  
 }
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+
+cloudinary.config( 
+  CLOUD_NAME = env('CLOUD_NAME'), 
+  API_KEY = env('API_KEY'), 
+  API_SECRET = env('API_SECRET') 
+)
 
 AUTH_PASSWORD_VALIDATORS = [
     {

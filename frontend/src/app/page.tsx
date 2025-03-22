@@ -3,7 +3,7 @@
 import './globals.css';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { Producto } from '../../types/producto'; 
+import { Producto } from '../types/producto'; 
 
 const Home = () => {
   const [productos, setProductos] = useState<Producto[]>([]); 
@@ -37,20 +37,18 @@ const Home = () => {
 
   return (
     <div className="bg-white">
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8 ">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Lista de Productos</h2>
-
         <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
           {productos.map((producto) => (
             <div key={producto.id} className="group relative">
-              {/* Usamos Image de Next.js para optimizar las imágenes */}
               <Image
-                    alt={`Imagen de ${producto.nombre}`}
-                    src={`http://localhost:8000${producto.imagen}`} // Asegúrate de que 'producto.imagen' contenga la ruta completa
-                    width={400} // Puedes ajustar el tamaño que desees
-                    height={400} // Puedes ajustar el tamaño que desees
-                    className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80"
-                />
+                alt={`Imagen de ${producto.nombre}`}
+                src={producto.urlfoto ? `http://localhost:8000${producto.urlfoto}` : '/ruta/a/imagen/por/defecto.jpg'} // Usar imagen por defecto si urlfoto es null o undefined
+                width={400} // Puedes ajustar el tamaño que desees
+                height={400} // Puedes ajustar el tamaño que desees
+                className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-80"
+              />
               <div className="mt-4 flex justify-between">
                 <div>
                   <h3 className="text-sm text-gray-700">
