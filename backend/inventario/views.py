@@ -14,6 +14,27 @@ class addProducto(generics.CreateAPIView):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
 
+    def create(self, request, *args, **kwargs):
+        # Procedemos a guardar el producto inicialmente (sin imagen)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        producto = serializer.save()  # Aquí ya tenemos el objeto producto con el id asignado
+
+        if 'imagen' in request.FILES:
+            imagen = request.FILES['imagen']
+            try:
+  
+                folder_path = f"productos/{producto.id}-{producto.nombre}"
+                response = cloudinary.uploader.upload(imagen, folder=folder_path)
+                urlfoto = response['secure_url']
+
+                producto.urlfoto = urlfoto
+                producto.save()
+            except Exception as e:
+                return Response({'error': 'Error al subir la imagen a Cloudinary', 'detalle': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(self.get_serializer(producto).data, status=status.HTTP_201_CREATED)
+
 class getProducto(generics.ListAPIView):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
@@ -89,12 +110,28 @@ class filtrarCategoria(generics.ListAPIView):
 
 @csrf_exempt
 def actualizar_imagen(request, id):
-    producto = Producto.objects.get(id=id)
-    imagen = request.FILES['imagen']
+    try:
+  
+        producto = Producto.objects.get(id=id)
 
-    folder_path = f"productos/{producto.id}-{producto.nombre}"
-    response = cloudinary.uploader.upload(imagen, folder=folder_path)
-    urlfoto = response['secure_url']
-    producto.urlfoto = urlfoto
-    producto.save()
-    return JsonResponse({'Correcto': True, 'urlfoto': urlfoto})
+        if producto.urlfoto:
+            from urllib.parse import urlparse
+
+            parsed_url = urlparse(producto.urlfoto)
+            public_id_with_extension = parsed_url.path.split("/")[-1]
+            public_id = public_id_with_extension.rsplit(".", 1)[0]
+
+            cloudinary.uploader.destroy(public_id)
+        imagen = request.FILES['imagen']
+        folder_path = f"productos/{producto.id}-{producto.nombre}"
+        response = cloudinary.uploader.upload(imagen, folder=folder_path)
+
+        producto.urlfoto = response['secure_url']
+        producto.save()
+
+        return JsonResponse({'Correcto': True, 'urlfoto': producto.urlfoto})
+
+    except Producto.DoesNotExist:
+        return JsonResponse({'Correcto': False, 'error': 'Producto no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'Correcto': False, 'error': str(e)}, status=500)

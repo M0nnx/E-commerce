@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Toaster } from "@/components/ui/sonner"
 import { Upload, ImagePlus } from "lucide-react"
 import toast from 'react-hot-toast';
+import Image from "next/image"
+import Header from "@/components/header"
+import Footer from "@/components/footer"
 
 
 export default function AgregarProducto() {
@@ -91,14 +94,16 @@ export default function AgregarProducto() {
     }
   }
 
-  const categorias = ["Electrónica", "Ropa", "Hogar", "Deportes", "Juguetes", "Alimentos", "Otros"]
-
+  const categorias = ["Frutos Secos", "Semillas", "Deshidratado", "Cereales",
+                      "Mixes", "Huevos", "Encurtidos","Chocolates","Otros"]
   return (
+    <div>
+    <Header />
     <div className="container mx-auto py-10 px-4">
       <Toaster />
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl">Agregar Nuevo Producto</CardTitle>
+          <CardTitle className="text-2xl">Agregar Producto Nuevo</CardTitle>
           <CardDescription>Complete el formulario para agregar un nuevo producto al inventario</CardDescription>
         </CardHeader>
         <CardContent>
@@ -118,7 +123,7 @@ export default function AgregarProducto() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="precio">Precio (€)</Label>
+                  <Label htmlFor="precio">Precio (CLP)</Label>
                   <Input
                     id="precio"
                     name="precio"
@@ -184,10 +189,11 @@ export default function AgregarProducto() {
                   <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 h-40">
                     {previewImage ? (
                       <div className="relative w-full h-full">
-                        <img
+                        <Image
                           src={previewImage || "/placeholder.svg"}
                           alt="Vista previa"
-                          className="w-full h-full object-contain"
+                          layout="fill" 
+                          objectFit="contain" 
                         />
                       </div>
                     ) : (
@@ -205,7 +211,7 @@ export default function AgregarProducto() {
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <Upload className="h-6 w-6 text-gray-400 mb-2" />
                         <p className="text-sm text-gray-500">
-                          <span className="font-semibold">Haga clic para cargar</span> o arrastre y suelte
+                          <span className="font-semibold ">Haga clic para cargar la imagen o arrastre desde su dispositivo</span>
                         </p>
                       </div>
                       <Input id="imagen" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
@@ -230,6 +236,8 @@ export default function AgregarProducto() {
           </form>
         </CardContent>
       </Card>
+    </div>
+    <Footer/>
     </div>
   )
 }

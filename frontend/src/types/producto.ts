@@ -5,7 +5,7 @@ export interface Producto {
     precio: number;
     stock: number;
     categoria: string;
-    urlfoto: string;
+    urlfoto: string | File;
 
   }
   
