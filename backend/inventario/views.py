@@ -61,6 +61,7 @@ class postProducto(generics.UpdateAPIView):
 class borrarProducto(generics.DestroyAPIView):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
+    
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         print(f'Producto eliminado: {instance.nombre} (ID: {instance.id})')

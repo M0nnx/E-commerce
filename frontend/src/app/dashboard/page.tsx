@@ -8,16 +8,6 @@ import { toast, Toaster } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -32,8 +22,6 @@ export default function Dashboard() {
   const [filteredProductos, setFilteredProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [productToDelete, setProductToDelete] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
@@ -75,36 +63,36 @@ export default function Dashboard() {
   }, [searchTerm, productos])
 
   const handleEliminar = async (id: number) => {
+    const confirmDelete = window.confirm("¿Estás seguro de eliminar este producto?");
+    
+    if (!confirmDelete) {
+      return; 
+    }
+  
     try {
       const response = await fetch(`http://localhost:8000/api/productos/delete/${id}/`, {
         method: "DELETE",
-      })
-
+      });
+  
       if (response.ok) {
-        setProductos(productos.filter((producto) => producto.id !== id))
-        setFilteredProductos(filteredProductos.filter((producto) => producto.id !== id))
-        setDeleteDialogOpen(false)
+        setProductos(productos.filter((producto) => producto.id !== id));
+        setFilteredProductos(filteredProductos.filter((producto) => producto.id !== id));
         toast.success("Producto eliminado", {
           description: "El producto ha sido eliminado correctamente",
-        })
+        });
       } else {
-        throw new Error("Error al eliminar el producto")
+        throw new Error("Error al eliminar el producto");
       }
     } catch (err) {
-      setError("Error al eliminar el producto. Por favor, intente de nuevo.")
+      setError("Error al eliminar el producto. Por favor, intente de nuevo.");
       toast.error("Error", {
         description: "No se pudo eliminar el producto. Intente nuevamente.",
-      })
-      console.error(err)
+      });
+      console.error(err);
     }
-  }
+  };
+  
 
-  const confirmDelete = (id: number) => {
-    setProductToDelete(id)
-    setDeleteDialogOpen(true)
-  }
-
-  // Función para obtener la URL de la imagen
   const getImageUrl = (urlfoto: string | File) => {
     if (urlfoto instanceof File) {
       return URL.createObjectURL(urlfoto)
@@ -112,7 +100,7 @@ export default function Dashboard() {
     return urlfoto || "/placeholder.svg?height=64&width=64"
   }
 
-  // Calcular estadísticas para el dashboard
+
   const totalProductos = productos.length
   const totalStock = productos.reduce((sum, producto) => sum + producto.stock, 0)
   const valorInventario = productos.reduce((sum, producto) => sum + producto.precio * producto.stock, 0)
@@ -120,9 +108,9 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto py-6 px-4 space-y-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Panel de Productos</h1>
               <p className="text-muted-foreground">Gestione su inventario de productos desde aquí</p>
@@ -133,7 +121,8 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Productos</CardTitle>
@@ -212,8 +201,8 @@ export default function Dashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-md border">
-                  <Table>
+                <div className="overflow-x-auto">
+                  <Table className="min-w-full bg-white border border-gray-200">
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[80px]">Imagen</TableHead>
@@ -224,20 +213,29 @@ export default function Dashboard() {
                           </div>
                         </TableHead>
                         <TableHead>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2">
                             Nombre
+                          </div>
+                        </TableHead>
+                        <TableHead>
+                          <div className="flex items-center gap-3">
+                            Precio
                             <ArrowUpDown size={14} />
                           </div>
                         </TableHead>
-                        <TableHead>Precio</TableHead>
-                        <TableHead>Stock</TableHead>
+                        <TableHead>  
+                          <div className="flex items-center gap-3">                 
+                            Stock
+                            <ArrowUpDown size={14} />
+                          </div>
+                        </TableHead>
                         <TableHead className="text-right">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredProductos.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                          <TableCell colSpan={6} className="whitespace-nowrap text-sm sm:text-base">
                             {searchTerm ? (
                               <div className="flex flex-col items-center gap-2">
                                 <Search size={24} />
@@ -313,7 +311,7 @@ export default function Dashboard() {
                                         variant="outline"
                                         size="icon"
                                         className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                        onClick={() => confirmDelete(producto.id)}
+                                        onClick={() => handleEliminar(producto.id)}
                                       >
                                         <Trash2 size={16} />
                                         <span className="sr-only">Eliminar</span>
@@ -336,29 +334,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
-      </main>
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Está seguro que desea eliminar este producto?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción no se puede deshacer. El producto será eliminado permanentemente de la base de datos y no
-              podrá recuperarse.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => productToDelete && handleEliminar(productToDelete)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
+      </main>  
       <Toaster />
       <Footer />
     </div>
