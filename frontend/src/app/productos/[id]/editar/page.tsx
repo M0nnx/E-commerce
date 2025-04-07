@@ -36,7 +36,7 @@ export default function EditarProducto() {
       }
       try {
         setLoading(true)
-        const response = await fetch(`http://localhost:8000/api/productos/view/${id}/`, {
+        const response = await fetch(`http://localhost:8000/api/productos/${id}/`, {
           method: "GET",
         })
 
@@ -93,7 +93,7 @@ export default function EditarProducto() {
       const formData = new FormData()
       formData.append("imagen", file)
       try {
-        const response = await fetch(`http://localhost:8000/api/productos/change/${id}/`, {
+        const response = await fetch(`http://localhost:8000/api/productos/${id}/`, {
           method: "POST",
           body: formData,
         })
@@ -147,7 +147,7 @@ export default function EditarProducto() {
       formData.append("urlfoto", producto.urlfoto)
     }
     try {
-      const response = await fetch(`http://localhost:8000/api/productos/post/${id}/`, {
+      const response = await fetch(`http://localhost:8000/api/productos/${id}/`, {
         method: "PUT",
         body: formData,
       })

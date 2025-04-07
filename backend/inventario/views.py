@@ -1,127 +1,74 @@
-from rest_framework import generics, status
-from .models import Producto
-from .serializer import ProductoSerializer
-from rest_framework import filters , viewsets
-from rest_framework.exceptions import NotFound
-from rest_framework.response import Response
+from rest_framework import viewsets, permissions
+from .models import Producto, Categoria
+from .serializers import ProductoSerializer, CategoriaSerializer
 from rest_framework.decorators import action
-from django.views.decorators.csrf import csrf_exempt
-from cloudinary.uploader import upload, cloudinary
-from django.http import JsonResponse
+from rest_framework.response import Response
+from cloudinary.uploader import upload, destroy
+from urllib.parse import urlparse
 
-
-class addProducto(generics.CreateAPIView):
+class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+    pagination_class = None
+
+    filterset_fields = ['nombre', 'categoria__nombre']
+    search_fields = ['nombre']
+    
+    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
+    def filtrado_categoria(self, request):
+        categoria_nombre = request.query_params.get('categoria', None)
+        if categoria_nombre:
+            categoria = Categoria.objects.filter(nombre=categoria_nombre).first()
+            if categoria:
+                productos = Producto.objects.filter(categoria=categoria)
+                serializer = self.get_serializer(productos, many=True)
+                return Response(serializer.data)
+            return Response({'detail': 'Categoría no encontrada'}, status=404)
+        return Response({'detail': 'Debe proporcionar un nombre de categoría'}, status=400)
+
+    def crear_imagen(self, serializer):
         producto = serializer.save()
-        if 'imagen' in request.FILES:
-            imagen = request.FILES['imagen']
+        imagen = self.request.FILES.get('imagen')
+        if imagen:
             try:
                 folder_path = f"productos/{producto.id}-{producto.nombre}"
-                response = cloudinary.uploader.upload(imagen, folder=folder_path)
-                urlfoto = response['secure_url']
-                producto.urlfoto = urlfoto
+                response = upload(imagen, folder=folder_path)
+                producto.urlfoto = response['secure_url']
                 producto.save()
             except Exception as e:
-                return Response({'error': 'Error al subir la imagen a Cloudinary', 'detalle': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(self.get_serializer(producto).data, status=status.HTTP_201_CREATED)
+                producto.delete()
+                raise e
 
-class getProducto(generics.ListAPIView):
-    queryset = Producto.objects.all()
-    serializer_class = ProductoSerializer
-
-class postProducto(generics.UpdateAPIView):
-    queryset = Producto.objects.all()
-    serializer_class = ProductoSerializer
-    lookup_field = 'id' 
-
-    def get(self, request, *args, **kwargs):
-        producto = self.get_object() 
-        return Response(self.serializer_class(producto).data)  
-    def update(self, request, *args, **kwargs):
-        producto = self.get_object()  
-        if 'nombre' in request.data:
-            producto.nombre = request.data['nombre']
-        if 'descripcion' in request.data:
-            producto.descripcion = request.data['descripcion']
-        if 'precio' in request.data:
-            producto.precio = request.data['precio']
-        if 'stock' in request.data:
-            producto.stock = request.data['stock']
-        if 'categoria' in request.data:
-            producto.categoria = request.data['categoria']
-        if 'urlfoto' in request.data:
-            producto.urlfoto = request.data['urlfoto']
-        producto.save()
-        return Response(self.serializer_class(producto).data)
-
-class borrarProducto(generics.DestroyAPIView):
-    queryset = Producto.objects.all()
-    serializer_class = ProductoSerializer
-    
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        print(f'Producto eliminado: {instance.nombre} (ID: {instance.id})')
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-        
-class buscarId(generics.RetrieveAPIView):
-    queryset = Producto.objects.all()
-    serializer_class= ProductoSerializer
-    filter_backends = [filters.BaseFilterBackend]
-    search_fields = ['id','nombre','categoria']
-    def get_object(self):
-        param = self.kwargs.get('param',None)
-        try:
-            id = int(param)
-            return Producto.objects.get(id=id)
-        except ValueError:
+    def actualizar_imagen(self, serializer):
+        producto = self.get_object()
+        imagen = self.request.FILES.get('imagen')
+        if imagen:
             try:
-                return Producto.objects.get(nombre__iexact=param)
-            except Producto.DoesNotExist:
-                raise NotFound(f"Producto no encontrado con el nombre: {param}")
-                
-class filtrarCategoria(generics.ListAPIView):
-    queryset= Producto.objects.all()
-    serializer_class= ProductoSerializer
+                if producto.urlfoto:
+                    parsed_url = urlparse(producto.urlfoto)
+                    public_id_with_extension = parsed_url.path.split("/")[-1]
+                    public_id = public_id_with_extension.rsplit(".", 1)[0]
+                    destroy(public_id)
+                folder_path = f"productos/{producto.id}-{producto.nombre}"
+                response = upload(imagen, folder=folder_path)
+                producto.urlfoto = response['secure_url']
+            except Exception as e:
+                raise e
+    
+        serializer.save()
 
-    def get_queryset(self):
-        param= self.kwargs.get('param',None)
-        if param:
-            productos = Producto.objects.filter(categoria__iexact=param)
-            if productos.exists():
-                return productos
-            else:
-                raise NotFound(f"No se encontraron productos en la categoría: {param}")
-        else:
-            raise NotFound("No se proporcionó ninguna categoría.")
-@csrf_exempt
-def actualizar_imagen(request, id):
-    try:
-  
-        producto = Producto.objects.get(id=id)
-
-        if producto.urlfoto:
-            from urllib.parse import urlparse
-
-            parsed_url = urlparse(producto.urlfoto)
+    def borrar_imagen(self, instance):
+        if instance.urlfoto:
+            parsed_url = urlparse(instance.urlfoto)
             public_id_with_extension = parsed_url.path.split("/")[-1]
             public_id = public_id_with_extension.rsplit(".", 1)[0]
+            try:
+                destroy(public_id)
+            except Exception as e:
+                pass
+        
+        super().perform_destroy(instance)
 
-            cloudinary.uploader.destroy(public_id)
-        imagen = request.FILES['imagen']
-        folder_path = f"productos/{producto.id}-{producto.nombre}"
-        response = cloudinary.uploader.upload(imagen, folder=folder_path)
-
-        producto.urlfoto = response['secure_url']
-        producto.save()
-
-        return JsonResponse({'Correcto': True, 'urlfoto': producto.urlfoto})
-
-    except Producto.DoesNotExist:
-        return JsonResponse({'Correcto': False, 'error': 'Producto no encontrado'}, status=404)
-    except Exception as e:
-        return JsonResponse({'Correcto': False, 'error': str(e)}, status=500)
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer

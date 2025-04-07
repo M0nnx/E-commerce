@@ -28,7 +28,7 @@ export default function Dashboard() {
     const fetchProductos = async () => {
       try {
         setLoading(true)
-        const response = await fetch("http://localhost:8000/api/productos/view/")
+        const response = await fetch("http://localhost:8000/api/productos/")
 
         if (!response.ok) {
           throw new Error("Error al cargar los productos")
@@ -70,7 +70,7 @@ export default function Dashboard() {
     }
   
     try {
-      const response = await fetch(`http://localhost:8000/api/productos/delete/${id}/`, {
+      const response = await fetch(`http://localhost:8000/api/productos/${id}/`, {
         method: "DELETE",
       });
   

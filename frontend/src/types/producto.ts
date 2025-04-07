@@ -8,4 +8,7 @@ export interface Producto {
     urlfoto: string | File;
 
   }
-  
+  export interface Categoria {
+    id: number;
+    nombre: string;
+  }

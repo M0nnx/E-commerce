@@ -14,3 +14,4 @@ uritemplate==4.1.1
 django-cors-headers
 Pillow
 django-cloudinary-storage
+djangorestframework-simplejwt

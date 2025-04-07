@@ -10,7 +10,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchProductos() {
       try {
-        const response = await fetch("http://localhost:8000/api/productos/view/"); 
+        const response = await fetch("http://localhost:8000/api/productos/"); 
         if (!response.ok) {
           throw new Error("No se pudieron obtener los productos");
         }
