@@ -277,7 +277,7 @@ export default function Dashboard() {
                             <TableCell className="font-mono text-sm">{producto.id}</TableCell>
                             <TableCell className="font-medium">{producto.nombre}</TableCell>
                             <TableCell className="font-medium">${producto.precio.toLocaleString()}</TableCell>
-                            <TableCell>
+                            <TableCell className="font-medium">
                               {producto.stock > 0 ? (
                                 <Badge variant={producto.stock < 10 ? "outline" : "secondary"}>
                                     {parseInt(producto.stock.toString())} unidades

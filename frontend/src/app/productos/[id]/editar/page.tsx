@@ -86,7 +86,6 @@ export default function EditarProducto() {
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length && producto) {
-      // Create preview
       const file = e.target.files[0]
       setImagePreview(URL.createObjectURL(file))
 

@@ -1,20 +1,28 @@
-from rest_framework import viewsets, permissions
-from .models import Producto, Categoria
-from .serializers import ProductoSerializer, CategoriaSerializer
-from rest_framework.decorators import action
+from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .models import Producto, Categoria
+from rest_framework.decorators import action
+from .serializers import ProductoSerializer, CategoriaSerializer
+from usuarios.permissions import IsAdminUser, IsClienteUser
 from cloudinary.uploader import upload, destroy
 from urllib.parse import urlparse
 
 class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
     serializer_class = ProductoSerializer
-    pagination_class = None
-
     filterset_fields = ['nombre', 'categoria__nombre']
     search_fields = ['nombre']
-    
-    @action(detail=False, methods=['get'], permission_classes=[permissions.AllowAny])
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve','filtrado_categoria']:
+            return [AllowAny()]
+        elif self.action in ['create', 'update', 'destroy']:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
+
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def filtrado_categoria(self, request):
         categoria_nombre = request.query_params.get('categoria', None)
         if categoria_nombre:
@@ -68,7 +76,6 @@ class ProductoViewSet(viewsets.ModelViewSet):
                 pass
         
         super().perform_destroy(instance)
-
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer

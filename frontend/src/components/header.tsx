@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
+
 export default function Header() {
   return (
     <header className="border-b sticky top-0 z-50 bg-background border-orange-400">
@@ -89,7 +90,7 @@ export default function Header() {
                     <span>Productos</span>
                   </Link>
                   <Link
-                    href="/mi-cuenta"
+                    href="/usuarios/perfil"
                     className="flex items-center gap-4 px-5 py-4 text-base font-medium transition-colors rounded-lg hover:bg-orange-50 hover:text-orange-600 active:bg-orange-100"
                   >
                     <div className="bg-orange-100 p-2 rounded-lg">
@@ -167,7 +168,7 @@ export default function Header() {
             <Link href="/productos" className="text-sm font-medium transition-colors hover:text-primary">
               Productos
             </Link>
-            <Link href="/mi-cuenta" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link href="/usuarios/perfil" className="text-sm font-medium transition-colors hover:text-primary">
               Mi Cuenta
             </Link>
             <Link

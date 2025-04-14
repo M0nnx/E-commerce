@@ -12,3 +12,10 @@ export interface Producto {
     id: number;
     nombre: string;
   }
+
+  export interface Usuario {
+    id: number;
+    nombre: string;
+  }
+
+  

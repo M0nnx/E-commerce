@@ -118,11 +118,11 @@
 
 @layer base {
   * {
-    border: 1px solid var(--color-border); /* Reemplaza con la propiedad que necesitas */
+    border: 1px solid var(--color-border);
     outline: 2px solid var(--color-ring);
   }
 
   body {
-    @apply bg-background text-foreground; /* Utiliza los colores definidos en tailwind.config.js */
+    @apply bg-background text-foreground; 
   }
 }
