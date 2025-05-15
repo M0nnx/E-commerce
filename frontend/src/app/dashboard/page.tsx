@@ -38,6 +38,7 @@ export default function Dashboard() {
         setProductos(data)
         setFilteredProductos(data)
         setError(null)
+
       } catch (err) {
         setError("No se pudieron cargar los productos. Por favor, intente de nuevo más tarde.")
         console.error(err)
@@ -45,6 +46,7 @@ export default function Dashboard() {
         setLoading(false)
       }
     }
+    
 
     fetchProductos()
   }, [])
@@ -261,8 +263,8 @@ export default function Dashboard() {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        filteredProductos.map((producto) => (
-                          <TableRow key={producto.id} className="group">
+                        filteredProductos.map((producto, index) => (
+                          <TableRow key={producto.id ?? index} className="group">
                             <TableCell>
                               <div className="relative h-12 w-12 overflow-hidden rounded-md border bg-muted">
                                 <Image

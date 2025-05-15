@@ -3,9 +3,17 @@ import { useEffect, useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Producto } from "@/types/producto";
+import Image from "next/image";
 
 export default function Home() {
   const [productos, setProductos] = useState<Producto[]>([]);
+
+  const getImageUrl = (urlfoto: string | File) => {
+    if (urlfoto instanceof File) {
+      return URL.createObjectURL(urlfoto)
+    }
+    return urlfoto || "/placeholder.svg?height=64&width=64"
+  }
 
   useEffect(() => {
     async function fetchProductos() {
@@ -48,6 +56,7 @@ export default function Home() {
                   </div>
                   <div className="p-4">
                     <h3 className="font-semibold mb-2">{producto.nombre}</h3>
+
                     <p className="text-sm text-muted-foreground mb-3">
                       {producto.descripcion}
                     </p>

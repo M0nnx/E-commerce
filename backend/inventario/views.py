@@ -14,6 +14,13 @@ class ProductoViewSet(viewsets.ModelViewSet):
     filterset_fields = ['nombre', 'categoria__nombre']
     search_fields = ['nombre']
 
+    def perform_create(self, serializer):
+        self.crear_imagen(serializer)
+    def perform_update(self, serializer):
+        self.actualizar_imagen(serializer)
+    def perform_destroy(self, instance):
+        self.borrar_imagen(instance)
+
     def get_permissions(self):
         if self.action in ['list', 'retrieve','filtrado_categoria']:
             return [AllowAny()]
@@ -62,7 +69,6 @@ class ProductoViewSet(viewsets.ModelViewSet):
                 producto.urlfoto = response['secure_url']
             except Exception as e:
                 raise e
-    
         serializer.save()
 
     def borrar_imagen(self, instance):
@@ -74,8 +80,8 @@ class ProductoViewSet(viewsets.ModelViewSet):
                 destroy(public_id)
             except Exception as e:
                 pass
-        
         super().perform_destroy(instance)
+
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer

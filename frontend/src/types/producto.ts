@@ -16,6 +16,8 @@ export interface Producto {
   export interface Usuario {
     id: number;
     nombre: string;
+    apellido: string;
+    password: string;
   }
 
   
